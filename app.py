@@ -1,3 +1,4 @@
+from bson import ObjectId
 from flask import Flask, jsonify, request
 from pymongo import MongoClient
 import config
@@ -27,6 +28,18 @@ def get_employees():
         emp["_id"] = str(emp["_id"])  # Convert ObjectId to string
         employees.append(emp)
     return jsonify(employees)
+
+@app.route('/employees/<emp_id>', methods=['DELETE'])
+def delete_emp(emp_id):
+    if not emp_id:
+        return {"error": "Employee ID is required"}, 400
+
+    result = collection.delete_one({"_id": ObjectId(emp_id)})
+
+    if result.deleted_count == 0:
+        return {"error": "Employee not found"}, 404
+
+    return {"message": "Employee deleted successfully"}, 200
 
 if __name__ == '__main__':
     app.run(debug=True)
